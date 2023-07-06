@@ -7,6 +7,8 @@ const errorController = require("./controllers/error");
 const sequelize = require("./util/database");
 const Product = require("./models/product");
 const User = require("./models/user");
+const Cart = require("./models/cart");
+const CartItem = require("./models/cart-item");
 
 const app = express();
 
@@ -33,8 +35,14 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-User.hasMany(Product);
+User.hasMany(Product);  // ONE TO MANY  
 Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
+
+User.hasOne(Cart); // ONE TO ONE
+Cart.belongsTo(User); 
+
+Cart.belongsToMany(Product, {through: CartItem});  // MANY TO MANY (cart can have multiple products)
+Product.belongsToMany(Cart, { through: CartItem });   // MANY TO MANY (a product can be present in multiple cart of different users)
 
 sequelize
   .sync({ force: false })
@@ -50,6 +58,9 @@ sequelize
   })
   .then((user) => {
     // console.log(user)
+    return user.createCart();
+  })
+  .then((cart) => {
     app.listen(3000);
   })
   .catch((err) => console.log(err));
