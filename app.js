@@ -4,11 +4,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const errorController = require("./controllers/error");
-const sequelize = require("./util/database");
-const Product = require("./models/product");
-const User = require("./models/user");
-const Cart = require("./models/cart");
-const CartItem = require("./models/cart-item");
+const mongoConnect = require("./util/database").mongoConnect;
+
+// const sequelize = require("./util/database");
+// const Product = require("./models/product");
+// const User = require("./models/user");
+// const Cart = require("./models/cart");
+// const CartItem = require("./models/cart-item");
 
 const app = express();
 
@@ -16,51 +18,56 @@ app.set("view engine", "ejs");
 app.set("views", "views");
 
 const adminRoutes = require("./routes/admin");
-const shopRoutes = require("./routes/shop");
+// const shopRoutes = require("./routes/shop");
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  User.findByPk(1)
-    .then((user) => {
-      req.user = user;
-      next();
-    })
-    .catch((err) => console.log(err));
+  // User.findByPk(1)
+  //   .then((user) => {
+  //     req.user = user;
+  //     next();
+  //   })
+  //   .catch((err) => console.log(err));
+  next();
 });
 
 app.use("/admin", adminRoutes);
-app.use(shopRoutes);
+// app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-User.hasMany(Product);  // ONE TO MANY  
-Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
+mongoConnect(() => {
+  app.listen(3000);
+});
 
-User.hasOne(Cart); // ONE TO ONE
-Cart.belongsTo(User); 
+// User.hasMany(Product);  // ONE TO MANY
+// Product.belongsTo(User, { constraints: true, onDelete: "CASCADE" });
 
-Cart.belongsToMany(Product, {through: CartItem});  // MANY TO MANY (cart can have multiple products)
-Product.belongsToMany(Cart, { through: CartItem });   // MANY TO MANY (a product can be present in multiple cart of different users)
+// User.hasOne(Cart); // ONE TO ONE
+// Cart.belongsTo(User);
 
-sequelize
-  .sync({ force: false })
-  .then((result) => {
-    return User.findByPk(1);
-    // console.log(result);
-  })
-  .then((user) => {
-    if (!user) {
-      return User.create({ name: "Max", email: "max@gmail.com" });
-    }
-    return user;
-  })
-  .then((user) => {
-    // console.log(user)
-    return user.createCart();
-  })
-  .then((cart) => {
-    app.listen(3000);
-  })
-  .catch((err) => console.log(err));
+// Cart.belongsToMany(Product, {through: CartItem});  // MANY TO MANY (cart can have multiple products)
+// Product.belongsToMany(Cart, { through: CartItem });   // MANY TO MANY (a product can be present in multiple cart of different users)
+
+// sequelize
+//   .sync({ force: false })
+//   .then((result) => {
+//     return User.findByPk(1);
+//     // console.log(result);
+//   })
+//   .then((user) => {
+//     if (!user) {
+//       return User.create({ name: "Max", email: "max@gmail.com" });
+//     }
+//     return user;
+//   })
+//   .then((user) => {
+//     // console.log(user)
+//     return user.createCart();
+//   })
+//   .then((cart) => {
+//     app.listen(3000);
+//   })
+//   .catch((err) => console.log(err));
