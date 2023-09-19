@@ -26,7 +26,7 @@ exports.postAddProduct = (req, res, next) => {
     price: price,
     description: description,
     imageUrl: imageUrl,
-
+    userId: req.user, // in mongoose if we store entire User object (req.user) in userId it'll automatically pick the _id from that Object
     // title,
     // price,
     // description,
@@ -104,7 +104,10 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
+    // .select("title price -_id") // by select we can controll which fields are returned (-_id)-> excluded the id of product
+    // .populate("userId", "name") // automatically populate related fields and fetch the related data
     .then((products) => {
+      // console.log(products);
       res.render("admin/products", {
         prods: products,
         pageTitle: "Admin Products",
